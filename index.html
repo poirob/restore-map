@@ -1,0 +1,2334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Restore Britain — Southend-on-Sea 2026/27 Electoral Strategy Command</title>
+
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+
+  <style>
+    :root {
+      --bg-primary: #090d16;
+      --bg-secondary: #111827;
+      --bg-card: #1e293b;
+      --bg-card-hover: #26354d;
+      --border-color: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-rb: #06b6d4;
+      --accent-rb-dark: #0891b2;
+      --color-gain: #10b981;
+      --color-viable: #f59e0b;
+      --color-spoiler: #ef4444;
+      --color-pact: #14b8a6;
+      --color-hold: #64748b;
+      --party-ref: #12b6cf;
+      --party-con: #0087dc;
+      --party-lab: #e4003b;
+      --party-ld: #faa61a;
+      --party-grn: #02a95b;
+      --party-ind: #a855f7;
+      --party-oth: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .leaflet-container {
+      background: #090d16 !important;
+      font-family: inherit;
+    }
+
+    /* Header */
+    header {
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-color);
+      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-shrink: 0;
+      z-index: 1000;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-badge {
+      background: linear-gradient(135deg, #06b6d4, #1d4ed8);
+      color: #fff;
+      font-weight: 800;
+      font-size: 0.82rem;
+      letter-spacing: 0.06em;
+      padding: 6px 10px;
+      border-radius: 6px;
+      text-transform: uppercase;
+    }
+
+    .brand-title h1 {
+      font-size: 1.02rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .brand-title p {
+      font-size: 0.73rem;
+      color: var(--text-muted);
+    }
+
+    .kpi-strip {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .kpi-pill {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 5px 10px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.75rem;
+    }
+
+    .kpi-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+    }
+
+    .kpi-val {
+      font-weight: 800;
+      font-size: 0.92rem;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    select.council-select,
+    .btn {
+      background: var(--bg-card);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 7px 12px;
+      border-radius: 6px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn:hover,
+    select.council-select:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--accent-rb);
+    }
+
+    /* Main 3-Column Workspace */
+    .workspace {
+      display: grid;
+      grid-template-columns: 350px 1fr 440px;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .panel {
+      background: var(--bg-secondary);
+      overflow-y: auto;
+      padding: 13px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .panel-left {
+      border-right: 1px solid var(--border-color);
+    }
+
+    .panel-right {
+      border-left: 1px solid var(--border-color);
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 9px;
+    }
+
+    .card-title {
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      font-weight: 700;
+    }
+
+    /* Pact Toggle Switch */
+    .pact-toggle-box {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      background: var(--bg-secondary);
+      padding: 4px;
+      border-radius: 7px;
+      border: 1px solid var(--border-color);
+      margin-bottom: 10px;
+    }
+
+    .pact-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 7px 6px;
+      border-radius: 5px;
+      font-size: 0.73rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .pact-btn.active {
+      background: var(--accent-rb-dark);
+      color: #fff;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Sliders */
+    .control-group {
+      margin-bottom: 9px;
+    }
+
+    .control-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .control-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      margin-bottom: 3px;
+      font-weight: 500;
+    }
+
+    .control-val {
+      color: var(--accent-rb);
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent-rb);
+      cursor: pointer;
+      height: 5px;
+    }
+
+    .sub-caption {
+      font-size: 0.69rem;
+      color: var(--text-muted);
+      margin-top: 3px;
+      line-height: 1.35;
+    }
+
+    .mode-buttons {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-top: 5px;
+    }
+
+    .mode-btn {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 6px 4px;
+      border-radius: 5px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .mode-btn.active {
+      background: rgba(6, 182, 212, 0.2);
+      border-color: var(--accent-rb);
+      color: #fff;
+    }
+
+    /* Ward List */
+    .ward-list {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .ward-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 9px;
+      background: var(--bg-secondary);
+      border: 1px solid transparent;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.76rem;
+      transition: all 0.12s;
+    }
+
+    .ward-row:hover {
+      border-color: var(--border-color);
+      background: var(--bg-card-hover);
+    }
+
+    .ward-row.selected {
+      border-color: var(--accent-rb);
+      background: rgba(6, 182, 212, 0.14);
+    }
+
+    .badge {
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 0.66rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .badge-gain {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.45);
+    }
+
+    .badge-viable {
+      background: rgba(245, 158, 11, 0.2);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.45);
+    }
+
+    .badge-spoiler {
+      background: rgba(239, 68, 68, 0.2);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.45);
+    }
+
+    .badge-pact {
+      background: rgba(20, 184, 166, 0.2);
+      color: #2dd4bf;
+      border: 1px solid rgba(20, 184, 166, 0.45);
+    }
+
+    .badge-hold {
+      background: rgba(100, 116, 139, 0.2);
+      color: #cbd5e1;
+      border: 1px solid rgba(100, 116, 139, 0.4);
+    }
+
+    /* Map Area */
+    .map-wrapper {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    #map {
+      width: 100%;
+      height: 100%;
+    }
+
+    .map-overlay-controls {
+      position: absolute;
+      top: 12px;
+      left: 54px;
+      z-index: 800;
+      display: flex;
+      gap: 6px;
+      background: rgba(15, 23, 42, 0.92);
+      padding: 5px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      backdrop-filter: blur(6px);
+    }
+
+    .map-legend {
+      position: absolute;
+      bottom: 18px;
+      left: 14px;
+      z-index: 800;
+      background: rgba(15, 23, 42, 0.92);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 0.73rem;
+      backdrop-filter: blur(6px);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 5px;
+    }
+
+    .legend-swatch {
+      width: 13px;
+      height: 13px;
+      border-radius: 3px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .ward-map-label {
+      background: rgba(15, 23, 42, 0.88);
+      border: 1px solid rgba(148, 163, 184, 0.45);
+      color: #f8fafc;
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 700;
+      text-align: center;
+      white-space: nowrap;
+      pointer-events: none;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+    }
+
+    /* Right Panel Details */
+    .ward-header-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .ward-header-title h2 {
+      font-size: 1.2rem;
+      font-weight: 800;
+    }
+
+    .prob-meter-box {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .metric-tile {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 7px 8px;
+    }
+
+    .metric-tile .label {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .metric-tile .value {
+      font-size: 1.05rem;
+      font-weight: 800;
+      margin-top: 2px;
+    }
+
+    /* 3 Recommended Priorities List */
+    .priority-list {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .priority-item {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-left: 3px solid var(--accent-rb);
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 0.77rem;
+      line-height: 1.4;
+    }
+
+    .priority-item.tactical {
+      border-left-color: #f59e0b;
+      background: rgba(245, 158, 11, 0.06);
+    }
+
+    .priority-tag {
+      display: inline-block;
+      font-size: 0.63rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 1px 5px;
+      border-radius: 3px;
+      margin-right: 5px;
+      background: rgba(6, 182, 212, 0.2);
+      color: #38bdf8;
+    }
+
+    .priority-item.tactical .priority-tag {
+      background: rgba(245, 158, 11, 0.22);
+      color: #fbbf24;
+    }
+
+    /* May 2027 Target Seat Spotlight */
+    .next-seat-spotlight {
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.12), rgba(30, 41, 59, 0.9));
+      border: 1px solid var(--accent-rb);
+      border-radius: 7px;
+      padding: 10px 11px;
+      margin-bottom: 9px;
+    }
+
+    .spotlight-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+
+    .spotlight-tag {
+      background: var(--accent-rb);
+      color: #090d16;
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+
+    .spotlight-bio {
+      font-size: 0.75rem;
+      color: #e2e8f0;
+      line-height: 1.42;
+      margin-top: 5px;
+    }
+
+    /* Councillor Cards */
+    .councillor-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .councillor-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-secondary);
+      padding: 7px 10px;
+      border-radius: 6px;
+      border-left: 4px solid var(--border-color);
+      font-size: 0.76rem;
+    }
+
+    .councillor-role {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Vote Share Bars */
+    .bar-row {
+      margin-bottom: 7px;
+    }
+
+    .bar-label-line {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.74rem;
+      margin-bottom: 2px;
+    }
+
+    .bar-track {
+      height: 7px;
+      background: var(--bg-secondary);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.22s ease;
+    }
+
+    /* Demographics Grid */
+    .demo-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+    }
+
+    .demo-item {
+      background: var(--bg-secondary);
+      padding: 6px 9px;
+      border-radius: 6px;
+      border: 1px solid rgba(51, 65, 85, 0.6);
+    }
+
+    .demo-item .d-label {
+      font-size: 0.67rem;
+      color: var(--text-muted);
+    }
+
+    .demo-item .d-val {
+      font-size: 0.88rem;
+      font-weight: 700;
+      margin-top: 1px;
+    }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      padding: 20px;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      max-width: 720px;
+      width: 100%;
+      max-height: 86vh;
+      overflow-y: auto;
+      padding: 20px;
+      line-height: 1.5;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .modal-content h3 {
+      font-size: 0.92rem;
+      color: var(--accent-rb);
+      margin: 12px 0 5px;
+    }
+
+    .modal-content p,
+    .modal-content li {
+      font-size: 0.82rem;
+      color: #e2e8f0;
+      margin-bottom: 5px;
+    }
+
+    .formula-box {
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      padding: 9px 12px;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 0.8rem;
+      color: #38bdf8;
+      margin: 6px 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="brand">
+      <div class="brand-badge">Restore Britain</div>
+      <div class="brand-title">
+        <h1>Southend-on-Sea Ward Strategy & May 2027 Target Map</h1>
+        <p>Verified 7 May 2026 Election Baseline • Southend Ward Profiles (Directory 61) • May 2027 Seat Dossiers</p>
+      </div>
+    </div>
+
+    <div class="kpi-strip">
+      <div class="kpi-pill">
+        <span class="kpi-dot" style="background: var(--color-gain);"></span>
+        <span>Projected Gains:</span>
+        <span class="kpi-val" id="kpi-gains">0</span>
+      </div>
+      <div class="kpi-pill">
+        <span class="kpi-dot" style="background: var(--color-viable);"></span>
+        <span>Viable Marginals:</span>
+        <span class="kpi-val" id="kpi-viable">0</span>
+      </div>
+      <div class="kpi-pill">
+        <span class="kpi-dot" style="background: var(--color-pact);"></span>
+        <span>Pact Stand-Asides:</span>
+        <span class="kpi-val" id="kpi-pact">0</span>
+      </div>
+      <div class="kpi-pill">
+        <span class="kpi-dot" style="background: var(--color-spoiler);"></span>
+        <span>Spoiler Risks:</span>
+        <span class="kpi-val" id="kpi-spoiler">0</span>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <select class="council-select" id="authoritySelect" title="Select Local Authority">
+        <option value="southend">Southend-on-Sea City Council (17 Wards)</option>
+        <option value="custom">+ Import ONS Ward GeoJSON (Expand Council...)</option>
+      </select>
+      <button class="btn" onclick="openModal('formulaModal')">Model Formulas</button>
+    </div>
+  </header>
+
+  <!-- MAIN WORKSPACE -->
+  <div class="workspace">
+
+    <!-- LEFT PANEL: PACT TOGGLE, SLIDERS & WARD TARGET RANKING -->
+    <aside class="panel panel-left">
+
+      <!-- 1. Reform UK Pact Toggle & Campaign Parameters -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">1. Electoral Strategy & Pact Mode</span>
+          <button class="btn" style="padding: 2px 7px; font-size: 0.66rem;" onclick="resetAllSliders()">Reset</button>
+        </div>
+
+        <div class="pact-toggle-box">
+          <button class="pact-btn active" id="pact-off" onclick="setPactMode(false)">
+            Contest All 17 Wards
+          </button>
+          <button class="pact-btn" id="pact-on" onclick="setPactMode(true)">
+            Reform UK Pact Mode
+          </button>
+        </div>
+        <div class="sub-caption" id="pact-caption" style="margin-bottom: 10px;">
+          <strong>Head-to-Head Mode:</strong> Restore Britain stands candidates across all 17 wards, competing directly with Reform UK, Conservatives, and Labour.
+        </div>
+
+        <div class="control-group">
+          <div class="control-label">
+            <span>Restore Britain Baseline Poll (B)</span>
+            <span class="control-val" id="val-baseline">22.0%</span>
+          </div>
+          <input type="range" id="slider-baseline" min="5" max="40" step="0.5" value="22" oninput="runSimulation()" />
+        </div>
+
+        <div class="control-group" style="margin-top: 10px;">
+          <div class="control-label">
+            <span>Ground Campaign Intensity (I<sub>w</sub>)</span>
+            <span class="control-val" id="val-intensity">1.25x</span>
+          </div>
+          <div class="mode-buttons">
+            <button class="mode-btn" id="int-075" onclick="setIntensity(0.75)">Paper (0.75x)</button>
+            <button class="mode-btn" id="int-100" onclick="setIntensity(1.00)">Standard (1.0x)</button>
+            <button class="mode-btn active" id="int-125" onclick="setIntensity(1.25)">Target (1.25x)</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. May 2026 Vote Transfer Weights -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">2. Vote Transfer Weights (&alpha;<sub>p</sub>)</span>
+          <span style="font-size: 0.66rem; color: var(--accent-rb);">Auto-Normalised</span>
+        </div>
+
+        <div class="control-group">
+          <div class="control-label">
+            <span>2026 Protest Pool (Confelicity/Heritage)</span>
+            <span class="control-val" id="val-protest">80%</span>
+          </div>
+          <input type="range" id="slider-protest" min="0" max="100" step="5" value="80" oninput="runSimulation()" />
+        </div>
+
+        <hr style="border: none; border-top: 1px solid var(--border-color); margin: 8px 0;" />
+
+        <div class="control-group">
+          <div class="control-label">
+            <span>From 2026 Reform UK (&alpha;<sub>Ref</sub>)</span>
+            <span class="control-val" id="val-w-ref">45%</span>
+          </div>
+          <input type="range" id="slider-w-ref" min="0" max="100" step="5" value="45" oninput="runSimulation()" />
+        </div>
+
+        <div class="control-group">
+          <div class="control-label">
+            <span>From 2026 Conservative (&alpha;<sub>Con</sub>)</span>
+            <span class="control-val" id="val-w-con">30%</span>
+          </div>
+          <input type="range" id="slider-w-con" min="0" max="100" step="5" value="30" oninput="runSimulation()" />
+        </div>
+
+        <div class="control-group">
+          <div class="control-label">
+            <span>From 2026 Independents (&alpha;<sub>Ind</sub>)</span>
+            <span class="control-val" id="val-w-ind">10%</span>
+          </div>
+          <input type="range" id="slider-w-ind" min="0" max="100" step="5" value="10" oninput="runSimulation()" />
+        </div>
+
+        <div class="control-group">
+          <div class="control-label">
+            <span>From 2026 Labour (&alpha;<sub>Lab</sub>)</span>
+            <span class="control-val" id="val-w-lab">10%</span>
+          </div>
+          <input type="range" id="slider-w-lab" min="0" max="100" step="5" value="10" oninput="runSimulation()" />
+        </div>
+
+        <div class="control-group">
+          <div class="control-label">
+            <span>From Non-Voters / Turnout (&alpha;<sub>Turn</sub>)</span>
+            <span class="control-val" id="val-w-turn">5%</span>
+          </div>
+          <input type="range" id="slider-w-turn" min="0" max="100" step="5" value="5" oninput="runSimulation()" />
+        </div>
+      </div>
+
+      <!-- 3. Ranked Ward List -->
+      <div class="card" style="flex: 1;">
+        <div class="card-header">
+          <span class="card-title">3. Ward Target Ranking (17 Wards)</span>
+          <span style="font-size: 0.66rem; color: var(--text-muted);">Sorted by Win Prob</span>
+        </div>
+        <div class="ward-list" id="ward-ranking-list"></div>
+      </div>
+
+    </aside>
+
+    <!-- CENTRE: ESRI DARK GRAY CANVAS MAP -->
+    <main class="map-wrapper">
+      <div class="map-overlay-controls">
+        <button class="mode-btn active" id="view-strategy" onclick="setMapViewMode('strategy')" style="padding: 6px 10px;">
+          Strategic Outcome View
+        </button>
+        <button class="mode-btn" id="view-2026" onclick="setMapViewMode('2026')" style="padding: 6px 10px;">
+          May 2026 Actual Winner
+        </button>
+        <button class="mode-btn" id="view-receptivity" onclick="setMapViewMode('receptivity')" style="padding: 6px 10px;">
+          Demographic Receptivity (R<sub>w</sub>)
+        </button>
+      </div>
+
+      <div id="map"></div>
+
+      <div class="map-legend">
+        <div style="font-weight: 700; margin-bottom: 4px; color: #f8fafc;">Map Colour Key</div>
+        <div id="legend-items"></div>
+      </div>
+    </main>
+
+    <!-- RIGHT PANEL: WARD DOSSIER, 3 PRIORITIES & MAY 2027 SEAT TARGET -->
+    <aside class="panel panel-right">
+
+      <!-- 1. Selected Ward Outcome Summary -->
+      <div class="card">
+        <div class="ward-header-title">
+          <div>
+            <h2 id="detail-ward-name">Southchurch Ward</h2>
+            <p style="font-size: 0.73rem; color: var(--text-muted);" id="detail-2026-summary"></p>
+          </div>
+          <span class="badge badge-gain" id="detail-outcome-badge">Projected Gain</span>
+        </div>
+
+        <div class="prob-meter-box">
+          <div class="metric-tile">
+            <div class="label">Win Prob</div>
+            <div class="value" id="detail-win-prob" style="color: var(--accent-rb);">0%</div>
+          </div>
+          <div class="metric-tile">
+            <div class="label">RB Share</div>
+            <div class="value" id="detail-rb-share">0%</div>
+          </div>
+          <div class="metric-tile">
+            <div class="label">Margin (M<sub>w</sub>)</div>
+            <div class="value" id="detail-margin">0%</div>
+          </div>
+          <div class="metric-tile">
+            <div class="label">Receptivity</div>
+            <div class="value" id="detail-receptivity">1.0x</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Three Recommended Priorities (2 Policy + 1 Tactical) -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">3 Recommended Campaign Priorities</span>
+          <span style="font-size: 0.66rem; color: var(--accent-rb);">Ward Profile + 2026 Split</span>
+        </div>
+        <div class="priority-list" id="priority-list-container"></div>
+      </div>
+
+      <!-- 3. May 2027 Seat Up Next + All 3 Ward Councillors -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">May 2027 Target Seat & Ward Councillors</span>
+          <span style="font-size: 0.66rem; color: var(--text-muted);">3 Seats per Ward</span>
+        </div>
+        <div id="next-seat-container"></div>
+        <div class="councillor-list" id="councillor-list-container"></div>
+      </div>
+
+      <!-- 4. Simulated Vote Share vs Exact May 2026 Result -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Projected Vote vs. 7 May 2026 Actual</span>
+          <span style="font-size: 0.66rem; color: var(--text-muted);">FPTP Simulation</span>
+        </div>
+        <div id="vote-bars-container"></div>
+      </div>
+
+      <!-- 5. Southend Ward Profile Metrics (Directory 61) -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Southend Ward Profile Demographics</span>
+          <a
+            href="https://www.southend.gov.uk/directory/61/ward-profiles"
+            target="_blank"
+            rel="noopener"
+            style="font-size: 0.68rem; color: var(--accent-rb); text-decoration: none;"
+          >Directory #61 ↗</a>
+        </div>
+        <div class="demo-grid" id="demo-grid-container"></div>
+      </div>
+
+    </aside>
+  </div>
+
+  <!-- FORMULA MODAL -->
+  <div class="modal-backdrop" id="formulaModal" onclick="closeModalOnBackdrop(event, 'formulaModal')">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>May 2026 Baseline & Probability Formulas</h2>
+        <button class="btn" onclick="closeModal('formulaModal')">Close ✕</button>
+      </div>
+
+      <h3>1. Ward Receptivity Multiplier (R<sub>w</sub>)</h3>
+      <p>Calculated from the Southend-on-Sea Ward Profiles (Directory 61) relative to the city-wide mean:</p>
+      <div class="formula-box">
+        R_w = 0.25*(Age65+/Avg65+) + 0.20*(OwnerOcc/AvgOwner) + 0.25*(NonGrad/AvgNonGrad) + 0.30*(RightPool_2026/AvgRightPool)
+      </div>
+
+      <h3>2. Contest All 17 Wards vs. Reform UK Pact Mode</h3>
+      <ul>
+        <li><strong>Contest All 17 Wards:</strong> Restore Britain stands in every ward (`V_RB = B * R_w * I_w`), absorbing the 2026 Confelicity/Heritage protest pool first and drawing the remainder from Reform UK, Conservatives, Independents, and Labour using your slider weights.</li>
+        <li><strong>Reform UK Pact Mode:</strong> Restore Britain stands aside in the 8 wards won by Reform UK on 7 May 2026 (*Belfairs, Blenheim Park, Prittlewell, Shoeburyness, St Laurence, St Luke's, Thorpe, West Shoebury*). In the remaining 9 non-Reform wards, Restore Britain acts as the unified populist right challenger, consolidating 85% of the May 2026 Reform UK vote on top of its Conservative and protest transfers.</li>
+      </ul>
+
+      <h3>3. Logistic Win Probability (P<sub>win</sub>)</h3>
+      <div class="formula-box">
+        M_w = V_RB - max(V'_rivals) &nbsp;&nbsp;|&nbsp;&nbsp; P_win = 100 / (1 + exp(-0.35 * M_w))
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden GeoJSON input -->
+  <input type="file" id="geojson-file-input" accept=".json,.geojson" style="display: none;" onchange="handleCustomGeoJSON(event)" />
+
+  <!-- Leaflet JS -->
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+
+  <script>
+    // =========================================================================
+    // 1. VERIFIED 7 MAY 2026 SOUTHEND-ON-SEA ELECTION RESULTS & 2027 DOSSIERS
+    // =========================================================================
+    const SOUTHEND_WARDS = [
+      {
+        id: "southchurch",
+        name: "Southchurch",
+        winner2026: "Con",
+        totalVotes2026: 3338,
+        turnout2026: "44.9%",
+        majority2026: "475 votes (14.2%)",
+        shares2026: { Ref: 29.7, Con: 43.9, Lab: 8.8, Ind: 0.0, LD: 2.4, Grn: 9.8, Oth: 5.4 },
+        receptivity: 1.36,
+        demographics: {
+          age65: "24.9%",
+          ownerOcc: "74.2%",
+          nonGrad: "72.6%",
+          carsPerHH: "1.44"
+        },
+        priorities: [
+          {
+            type: "Policy 1",
+            isTactical: false,
+            text: "Protect single-family detached/semi-detached streets from HMO conversions and over-intensive flat developments along Eastern Esplanade and Southchurch Road."
+          },
+          {
+            type: "Policy 2",
+            isTactical: false,
+            text: "Freeze commuter parking charges and oppose punitive traffic-calming/LTN schemes affecting the 74.2% owner-occupied, multi-car households."
+          },
+          {
+            type: "Tactical",
+            isTactical: true,
+            text: "79.0% of Southchurch voters backed Con (43.9%), Reform (29.7%), or Confelicity (5.4%) in May 2026. Target Cllr Colin Campbell's Con seat in May 2027 by uniting the right-leaning homeowner vote; zero risk of handing the seat to Labour (8.8%)."
+          }
+        ],
+        nextSeat2027: {
+          name: "Cllr Colin Campbell",
+          party: "Con",
+          profile: "Conservative Group Whip; re-elected in May 2023 with 49.4% before the right vote fractured. Defending the solitary Conservative seat up in 2027 alongside Reform UK Whip Cllr Darryl Jones. Vulnerable to a direct populist-right challenge on council tax and seafront parking."
+        },
+        otherCouncillors: [
+          { name: "Cllr Martin Bright", party: "Con", role: "Elected May 2026 (1,465 votes / 43.9%) • Term ends 2030" },
+          { name: "Cllr Darryl Jones", party: "Ref", role: "Reform UK Group Whip • Term ends 2028" }
+        ],
+        coords: [
+          [51.556, 0.720], [51.553, 0.748], [51.544, 0.744],
+          [51.542, 0.720], [51.546, 0.716]
+        ]
+      },
+      {
+        id: "shoeburyness",
+        name: "Shoeburyness",
+        winner2026: "Ref",
+        totalVotes2026: 3286,
+        turnout2026: "38.5%",
+        majority2026: "615 votes (18.7%)",
+        shares2026: { Ref: 40.1, Con: 11.0, Lab: 7.2, Ind: 22.6, LD: 2.6, Grn: 14.8, Oth: 1.8 },
+        receptivity: 1.35,
+        demographics: {
+          age65: "23.8%",
+          ownerOcc: "68.4%",
+          nonGrad: "74.2%",
+          carsPerHH: "1.38"
+        },
+        priorities: [
+          {
+            type: "Policy 1",
+            isTactical: false,
+            text: "Demand infrastructure-first planning (GP surgery capacity, flood defences, and C2C/A13 road relief) before any further housing expansion at Gunners Park or East Beach."
+          },
+          {
+            type: "Policy 2",
+            isTactical: false,
+            text: "Step up high-visibility seafront enforcement against summer anti-social behaviour and unauthorised encampments around East Beach."
+          },
+          {
+            type: "Tactical",
+            isTactical: true,
+            text: "Conservatives collapsed to 11.0% here in May 2026 while Reform won 40.1% and Independents took 22.6%. Focus doorstep canvassing on Cllr Steven Wakefield's Independent seat in May 2027."
+          }
+        ],
+        nextSeat2027: {
+          name: "Cllr Steven Wakefield",
+          party: "Ind",
+          profile: "Veteran local councillor originally elected as Independent in 2023, briefly joined Conservatives, now sits in the Independent Group. Faces a transformed ward where both remaining seats are held by Reform UK (Moyies & McMahon)."
+        },
+        otherCouncillors: [
+          { name: "Cllr Alex Moyies", party: "Ref", role: "Elected May 2026 (1,319 votes / 40.1%) • Term ends 2030" },
+          { name: "Cllr Judith McMahon", party: "Ref", role: "Reform UK Group • Term ends 2028" }
+        ],
+        coords: [
+          [51.540, 0.772], [51.545, 0.798], [51.535, 0.812],
+          [51.522, 0.798], [51.520, 0.772], [51.529, 0.768]
+        ]
+      },
+      {
+        id: "west_shoebury",
+        name: "West Shoebury",
+        winner2026: "Ref",
+        totalVotes2026: 3214,
+        turnout2026: "44.2%",
+        majority2026: "355 votes (11.0%)",
+        shares2026: { Ref: 37.4, Con: 26.3, Lab: 10.9, Ind: 8.8, LD: 3.4, Grn: 11.5, Oth: 1.7 },
+        receptivity: 1.38,
+        demographics: {
+          age65: "26.1%",
+          ownerOcc: "76.2%",
+          nonGrad: "73.5%",
+          carsPerHH: "1.48"
+        },
+        priorities: [
+          {
+            type: "Policy 1",
+            isTactical: false,
+            text: "Campaign for a strict value-for-money audit on Southend Council Tax and protect weekly kerbside waste collections for high-homeownership family estates."
+          },
+          {
+            type: "Policy 2",
+            isTactical: false,
+            text: "Upgrade Bournes Green/Ness Road junction capacity and protect local green buffer land from speculative development."
+          },
+          {
+            type: "Tactical",
+            isTactical: true,
+            text: "74.2% combined right-of-centre vote in May 2026 (37.4% Reform, 26.3% Con, 8.8% Ind). In Pact Mode, recommend standing aside for Reform UK Group Leader Cllr Tony Cox in May 2027."
+          }
+        ],
+        nextSeat2027: {
+          name: "Cllr Tony Cox",
+          party: "Ref",
+          profile: "Leader of the Southend Reform UK Group and former Conservative Council Leader (2023–24). Elected with 47.4% in May 2023 before defecting to Reform UK. High-profile incumbent with deep local name recognition."
+        },
+        otherCouncillors: [
+          { name: "Cllr Stephen Harvey", party: "Ref", role: "Elected May 2026 (1,201 votes / 37.4%) • Term ends 2030" },
+          { name: "Cllr James Moyies", party: "Con", role: "Conservative Group • Term ends 2028" }
+        ],
+        coords: [
+          [51.553, 0.748], [51.555, 0.775], [51.540, 0.772],
+          [51.529, 0.768], [51.533, 0.745], [51.544, 0.744]
+        ]
+      },
+      {
+        id: "thorpe",
+        name: "Thorpe",
+        winner2026: "Ref",
+        totalVotes2026: 3744,
+        turnout2026: "48.1%",
+        majority2026: "246 votes (6.6%)",
+        shares2026: { Ref: 33.1, Con: 16.7, Lab: 7.5, Ind: 26.6, LD: 1.8, Grn: 8.5, Oth: 5.7 },
+        receptivity: 1.34,
+        demographics: {
+          age65: "27.4%",
+          ownerOcc: "79.8%",
+          nonGrad: "69.8%",
+          carsPerHH: "1.51"
+        },
+        priorities: [
+          {
+            type: "Policy 1",
+            isTactical: false,
+            text: "Oppose high-density seafront flat blocks and defend character planning rules across Thorpe Bay's 79.8% owner-occupied avenues."
+          },
+          {
+            type: "Policy 2",
+            isTactical: false,
+            text: "Demand ring-fenced road resurfacing and coastal sea-wall maintenance funding for Thorpe Esplanade."
+          },
+          {
+            type: "Tactical",
+            isTactical: true,
+            text: "82.1% combined Reform (33.1%), Independent (26.6%), Con (16.7%), and Confelicity/Heritage (5.7%) vote in May 2026. Target the 16.7% residual Conservative vote and 5.7% Confelicity vote to overtake Cllr Ron Woodley (Ind) in May 2027."
+          }
+        ],
+        nextSeat2027: {
+          name: "Cllr Ron Woodley",
+          party: "Ind",
+          profile: "Long-serving Independent figurehead and former Deputy Leader of the Council. Won 49.3% in 2023, but his fellow Independent Martin Terry was defeated by Reform UK's John Corrigan (33.1% vs 26.6%) in May 2026."
+        },
+        otherCouncillors: [
+          { name: "Cllr John Corrigan", party: "Ref", role: "Elected May 2026 (1,241 votes / 33.1%) • Term ends 2030" },
+          { name: "Cllr Susan Badger", party: "Ind", role: "Independent Group • Term ends 2028" }
+        ],
+        coords: [
+          [51.542, 0.720], [51.544, 0.744], [51.533, 0.745],
+          [51.520, 0.772], [51.518, 0.738], [51.524, 0.718]
+        ]
+      },
+      {
+        id: "st_laurence",
+        name: "St Laurence",
+        winner2026: "Ref",
+        totalVotes2026: 3460,
+        turnout2026: "43.8%",
+        majority2026: "326 votes (9.4%)",
+        shares2026: { Ref: 41.0, Con: 12.1, Lab: 31.6, Ind: 0.0, LD: 4.0, Grn: 8.2, Oth: 3.1 },
+        receptivity: 1.22,
+        demographics: {
+          age65: "20.4%",
+          ownerOcc: "70.1%",
+          nonGrad: "74.0%",
+          carsPerHH: "1.42"
+        },
+        priorities: [
+          {
+            type: "Policy 1",
+            isTactical: false,
+            text: "Relieve A127 Bellhouse/Kent Elms congestion and oppose anti-motorist charges affecting working families and tradespeople (1.42 cars per household)."
+          },
+          {
+            type: "Policy 2",
+            isTactical: false,
+            text: "Protect Eastwoodbury Lane green spaces while backing skilled local aviation/industrial jobs around Southend Airport."
+          },
+          {
+            type: "Tactical",
+            isTactical: true,
+            text: "May 2027 is the marquee battle of the council cycle: Labour Council Leader Cllr Daniel Cowan is up for re-election after Labour lost St Laurence to Reform UK (41.0% vs 31.6%) in May 2026. Avoid splitting the anti-Labour vote here."
+          }
+        ],
+        nextSeat2027: {
+          name: "Cllr Daniel Cowan",
+          party: "Lab",
+          profile: "Leader of Southend-on-Sea City Council (Labour/LD/Ind coalition). Won 53.4% in May 2023, but his ward colleague Lydia Hyde was unseated by Reform UK's Frankie Bird by 326 votes (41.0% to 31.6%) in May 2026."
+        },
+        otherCouncillors: [
+          { name: "Cllr Frankie Bird", party: "Ref", role: "Elected May 2026 (1,418 votes / 41.0%) • Term ends 2030" },
+          { name: "Cllr Madison Faulkner-Hatt", party: "Lab", role: "Labour Group • Term ends 2028" }
+        ],
+        coords: [
+          [51.582, 0.662], [51.582, 0.695], [51.565, 0.692],
+          [51.565, 0.662]
+        ]
+      },
+      {
+        id: "st_lukes",
+        name: "St Luke's",
+        winner2026: "Ref",
+        totalVotes2026: 3179,
+        turnout2026: "39.4%",
+        majority2026: "395 votes (12.4%)",
+        shares2026: { Ref: 38.1, Con: 10.4, Lab: 25.7, Ind: 5.6, LD: 1.8, Grn: 14.6, Oth: 3.8 },
+        receptivity: 1.18,
+        demographics: {
+          age65: "16.8%",
+          ownerOcc: "56.4%",
+          nonGrad: "75.8%",
+          carsPerHH: "1.18"
+        },
+        priorities: [
+          {
+            type: "Policy 1",
+            isTactical: false,
+            text: "Zero-tolerance enforcement on fly-tipping, unlicensed HMOs, and anti-social behaviour around Cluny Square and Bournemouth Park Road."
+          },
+          {
+            type: "Policy 2",
+            isTactical: false,
+            text: "Prioritise local Southend families in social housing allocations and cap council tax rises on working-class households (75.8% vocational/non-degree workforce)."
+          },
+          {
+            type: "Tactical",
+            isTactical: true,
+            text: "Labour's vote fell 18.1 points to 25.7% in May 2026 as James O'Rourke won on 38.1%. Non-aligned Cllr Martin Berry's seat is up in May 2027—prime pickup for a unified working-class right campaign."
+          }
+        ],
+        nextSeat2027: {
+          name: "Cllr Martin Berry",
+          party: "Ind",
+          profile: "Elected as Labour in May 2023 (41.3%), later left the Labour Group to sit as a Non-Aligned Independent. Lacks a major-party machine heading into May 2027."
+        },
+        otherCouncillors: [
+          { name: "Cllr James O'Rourke", party: "Ref", role: "Elected May 2026 (1,212 votes / 38.1%) • Deputy Reform Leader" },
+          { name: "Cllr Jane Norman", party: "Lab", role: "Labour Group • Term ends 2028" }
+        ],
+        coords: [
+          [51.568, 0.708], [51.568, 0.735], [51.556, 0.720],
+          [51.546, 0.716], [51.552, 0.704]
+        ]
+      },
+      {
+        id: "belfairs",
+        name: "Belfairs",
+        winner2026: "Ref",
+        totalVotes2026: 3531,
+        turnout2026: "47.9%",
+        majority2026: "460 votes (13.0%)",
+        shares2026: { Ref: 36.3, Con: 22.4, Lab: 5.4, Ind: 8.1, LD: 4.1, Grn: 23.2, Oth: 0.5 },
+        receptivity: 1.28,
+        demographics: {
+          age65: "28.2%",
+          ownerOcc: "81.5%",
+          nonGrad: "68.4%",
+          carsPerHH: "1.52"
+        },
+        priorities: [
+          {
+            type: "Policy 1",
+            isTactical: false,
+            text: "Protect Belfairs Woods and local golf/parkland amenities while defending low-density family housing character."
+          },
+          {
+            type: "Policy 2",
+            isTactical: false,
+            text: "Dedicated pavement, drainage, and highway maintenance for Southend's oldest demographic profile (28.2% aged 65+)."
+          },
+          {
+            type: "Tactical",
+            isTactical: true,
+            text: "Watch the Green Party surge (23.2% in May 2026). If Restore Britain and Reform UK split the 66.8% right/independent pool down the middle, the Greens can slip through the middle."
+          }
+        ],
+        nextSeat2027: {
+          name: "Cllr Stephen Aylen",
+          party: "Ind",
+          profile: "Long-serving Non-Aligned Independent (formerly Conservative). Won 38.9% in May 2023. Faces strong competition after Oscar Wood won Belfairs with 1,280 votes (36.3%) in May 2026."
+        },
+        otherCouncillors: [
+          { name: "Cllr Oscar Wood", party: "Ref", role: "Elected May 2026 (1,280 votes / 36.3%) • Term ends 2030" },
+          { name: "Cllr Jack Warren", party: "Con", role: "Conservative Group • Term ends 2028" }
+        ],
+        coords: [
+          [51.564, 0.638], [51.565, 0.662], [51.551, 0.664],
+          [51.549, 0.638]
+        ]
+      },
+      {
+        id: "prittlewell",
+        name: "Prittlewell",
+        winner2026: "Ref",
+        totalVotes2026: 3433,
+        turnout2026: "43.9%",
+        majority2026: "110 votes (3.2%)",
+        shares2026: { Ref: 31.8, Con: 28.6, Lab: 18.7, Ind: 0.0, LD: 4.7, Grn: 14.3, Oth: 1.9 },
+        receptivity: 1.12,
+        demographics: {
+          age65: "19.2%",
+          ownerOcc: "64.8%",
+          nonGrad: "67.5%",
+          carsPerHH: "1.28"
+        },
+        priorities: [
+          {
+            type: "Policy 1",
+            isTactical: false,
+            text: "Protect residential streets around Southend Hospital and Priory Park from overspill parking and poorly managed HMO conversions."
+          },
+          {
+            type: "Policy 2",
+            isTactical: false,
+            text: "Tackle Victoria Avenue/Priory Crescent congestion and improve lighting and policing around Prittlewell Station."
+          },
+          {
+            type: "Tactical",
+            isTactical: true,
+            text: "Michael Heaver (Reform UK) unseated Conservative Kevin Buck by 110 votes (31.8% vs 28.6%) in May 2026 while Labour dropped to 18.7%. Target the remaining 28.6% Conservative vote held by Cllr Meg Davidson in May 2027."
+          }
+        ],
+        nextSeat2027: {
+          name: "Cllr Meg Davidson",
+          party: "Con",
+          profile: "Veteran Conservative councillor who narrowly held Prittlewell by 25 votes over Labour in May 2023. Highly vulnerable on the right flank after Reform UK took the ward in May 2026."
+        },
+        otherCouncillors: [
+          { name: "Cllr Michael Heaver", party: "Ref", role: "Elected May 2026 (1,091 votes / 31.8%) • Term ends 2030" },
+          { name: "Cllr David Garston", party: "Con", role: "Conservative Group • Term ends 2028" }
+        ],
+        coords: [
+          [51.565, 0.684], [51.568, 0.708], [51.552, 0.704],
+          [51.551, 0.684]
+        ]
+      },
+      {
+        id: "blenheim_park",
+        name: "Blenheim Park",
+        winner2026: "Ref",
+        totalVotes2026: 3458,
+        turnout2026: "43.7%",
+        majority2026: "208 votes (6.0%)",
+        shares2026: { Ref: 31.1, Con: 15.8, Lab: 25.0, Ind: 10.5, LD: 3.1, Grn: 13.1, Oth: 1.4 },
+        receptivity: 1.14,
+        demographics: {
+          age65: "19.5%",
+          ownerOcc: "67.2%",
+          nonGrad: "68.9%",
+          carsPerHH: "1.34"
+        },
+        priorities: [
+          {
+            type: "Policy 1",
+            isTactical: false,
+            text: "Enforce school-run traffic management and road safety around Blenheim Primary and Southend High School for Boys."
+          },
+          {
+            type: "Policy 2",
+            isTactical: false,
+            text: "Defend family housing along Blenheim Chase from flat sub-divisions and campaign against hospital parking permit creep."
+          },
+          {
+            type: "Tactical",
+            isTactical: true,
+            text: "Craig Watt (Reform UK) defeated Labour incumbent Laurie Burton by 31.1% to 25.0% in May 2026. Warning: standing two competing right-wing candidates in May 2027 risks handing the seat back to Labour incumbent Cllr Donna Richardson."
+          }
+        ],
+        nextSeat2027: {
+          name: "Cllr Donna Richardson",
+          party: "Lab",
+          profile: "Labour & Co-operative councillor elected with 34.0% in May 2023. Defending a seat where the Labour vote fell to 25.0% in May 2026."
+        },
+        otherCouncillors: [
+          { name: "Cllr Craig Watt", party: "Ref", role: "Elected May 2026 (1,074 votes / 31.1%) • Term ends 2030" },
+          { name: "Cllr Shahid Nadeem", party: "Lab", role: "Labour Group • Term ends 2028" }
+        ],
+        coords: [
+          [51.565, 0.662], [51.565, 0.684], [51.551, 0.684],
+          [51.551, 0.664]
+        ]
+      },
+      {
+        id: "kursaal",
+        name: "Kursaal",
+        winner2026: "Lab",
+        totalVotes2026: 2582,
+        turnout2026: "32.3%",
+        majority2026: "101 votes (3.9%)",
+        shares2026: { Ref: 29.0, Con: 6.2, Lab: 32.9, Ind: 0.0, LD: 2.7, Grn: 13.9, Oth: 15.3 },
+        receptivity: 1.15,
+        demographics: {
+          age65: "11.9%",
+          ownerOcc: "34.2%",
+          nonGrad: "74.5%",
+          carsPerHH: "0.78"
+        },
+        priorities: [
+          {
+            type: "Policy 1",
+            isTactical: false,
+            text: "Tackle violent crime, street drinking, and drug dealing across Kursaal estates and Woodgrange Drive (highest deprivation decile in Southend)."
+          },
+          {
+            type: "Policy 2",
+            isTactical: false,
+            text: "Demand regeneration of the derelict Kursaal seafront landmark and strict licensing crackdowns on rogue HMO landlords."
+          },
+          {
+            type: "Tactical",
+            isTactical: true,
+            text: "Prime non-Reform pickup opportunity: Labour held Kursaal by just 101 votes (32.9% vs 29.0% Reform) in May 2026 ONLY because Confelicity + Heritage took a massive 15.3% (395 votes). Uniting the 29.0% Reform + 15.3% Confelicity/Heritage + 6.2% Con vote wins this seat outright in May 2027."
+          }
+        ],
+        nextSeat2027: {
+          name: "Cllr Chris Webster",
+          party: "Lab",
+          profile: "Labour councillor who won a November 2024 by-election after former councillor Gabriel Leroy resigned. Defending a razor-thin 101-vote Labour margin where Labour's vote share fell 18 points in May 2026."
+        },
+        otherCouncillors: [
+          { name: "Cllr Matt Dent", party: "Lab", role: "Elected May 2026 (849 votes / 32.9%) • Cabinet Member" },
+          { name: "Cllr Irene Ferguson", party: "Lab", role: "Labour Group • Term ends 2028" }
+        ],
+        coords: [
+          [51.542, 0.705], [51.546, 0.716], [51.542, 0.720],
+          [51.524, 0.718], [51.528, 0.705]
+        ]
+      },
+      {
+        id: "victoria",
+        name: "Victoria",
+        winner2026: "Lab",
+        totalVotes2026: 2714,
+        turnout2026: "34.2%",
+        majority2026: "137 votes (5.1%)",
+        shares2026: { Ref: 29.4, Con: 8.0, Lab: 34.5, Ind: 0.0, LD: 3.4, Grn: 22.0, Oth: 2.7 },
+        receptivity: 1.04,
+        demographics: {
+          age65: "12.4%",
+          ownerOcc: "38.9%",
+          nonGrad: "71.2%",
+          carsPerHH: "0.82"
+        },
+        priorities: [
+          {
+            type: "Policy 1",
+            isTactical: false,
+            text: "Restore High Street & Queensway safety with dedicated town-centre wardens, CCTV, and tougher action on shoplifting and aggressive begging."
+          },
+          {
+            type: "Policy 2",
+            isTactical: false,
+            text: "Halt the conversion of family terraced houses into transient bedsits and reform the stalled Better Queensway regeneration."
+          },
+          {
+            type: "Tactical",
+            isTactical: true,
+            text: "Labour's vote collapsed by 25.6 points in May 2026 (from 60.8% down to 34.5%), surviving by just 137 votes over Reform UK (29.4%) as the Greens took 22.0%. Squeezing the remaining 8.0% Con + 2.7% Confelicity vote puts Cllr Mandy O'Connor's seat in play for May 2027."
+          }
+        ],
+        nextSeat2027: {
+          name: "Cllr Mandy O'Connor",
+          party: "Lab",
+          profile: "Cabinet Member for Children, Learning and SEND. Elected in May 2023 with 57.5% when Labour dominated urban Southend, now facing a 3-way split between Labour (34.5%), populist right (40.1% combined), and Greens (22.0%)."
+        },
+        otherCouncillors: [
+          { name: "Cllr Margaret Borton", party: "Lab", role: "Elected May 2026 (936 votes / 34.5%) • Term ends 2030" },
+          { name: "Cllr Ian Gilbert", party: "Lab", role: "Labour Cabinet Member • Term ends 2028" }
+        ],
+        coords: [
+          [51.552, 0.698], [51.552, 0.704], [51.546, 0.716],
+          [51.542, 0.705], [51.542, 0.698]
+        ]
+      },
+      {
+        id: "milton",
+        name: "Milton",
+        winner2026: "Lab",
+        totalVotes2026: 3102,
+        turnout2026: "37.4%",
+        majority2026: "76 votes (2.4%)",
+        shares2026: { Ref: 27.8, Con: 11.4, Lab: 30.2, Ind: 0.0, LD: 4.3, Grn: 23.9, Oth: 2.4 },
+        receptivity: 0.98,
+        demographics: {
+          age65: "14.2%",
+          ownerOcc: "41.8%",
+          nonGrad: "64.0%",
+          carsPerHH: "0.86"
+        },
+        priorities: [
+          {
+            type: "Policy 1",
+            isTactical: false,
+            text: "Crack down on anti-social behaviour, street crime, and fly-tipping around Hamlet Court Road, Milton Road, and Westcliff seafront."
+          },
+          {
+            type: "Policy 2",
+            isTactical: false,
+            text: "Cut town-centre parking charges to revive independent shops on Hamlet Court Road and protect resident permit zones."
+          },
+          {
+            type: "Tactical",
+            isTactical: true,
+            text: "Closest 4-way split in Southend in May 2026: Deputy Council Leader Maxine Sadza (Lab) clung on with just 30.2% (76-vote margin) over Reform (27.8%) and Green (23.9%). Winning over half of the remaining 11.4% Conservative vote flips Cllr Cheryl Nevin's seat in May 2027."
+          }
+        ],
+        nextSeat2027: {
+          name: "Cllr Cheryl Nevin",
+          party: "Lab",
+          profile: "Labour councillor elected in May 2023 (50.8%). Defending a ward where the progressive vote is now split straight down the middle between Labour (30.2%) and the Green Party (23.9%)."
+        },
+        otherCouncillors: [
+          { name: "Cllr Maxine Sadza", party: "Lab", role: "Elected May 2026 (938 votes / 30.2%) • Deputy Council Leader" },
+          { name: "Cllr Sam Allen", party: "Lab", role: "Labour Group • Term ends 2028" }
+        ],
+        coords: [
+          [51.542, 0.690], [51.542, 0.705], [51.528, 0.705],
+          [51.534, 0.690]
+        ]
+      },
+      {
+        id: "eastwood_park",
+        name: "Eastwood Park",
+        winner2026: "LD",
+        totalVotes2026: 3538,
+        turnout2026: "48.8%",
+        majority2026: "460 votes (13.0%)",
+        shares2026: { Ref: 35.5, Con: 9.0, Lab: 2.6, Ind: 0.0, LD: 48.5, Grn: 3.8, Oth: 0.5 },
+        receptivity: 1.15,
+        demographics: {
+          age65: "26.8%",
+          ownerOcc: "82.1%",
+          nonGrad: "72.1%",
+          carsPerHH: "1.55"
+        },
+        priorities: [
+          {
+            type: "Policy 1",
+            isTactical: false,
+            text: "Expose the Lib Dem/Labour coalition's council tax hikes and financial mismanagement directly to Eastwood Park's 82.1% homeowner base."
+          },
+          {
+            type: "Policy 2",
+            isTactical: false,
+            text: "Defend Oakwood Park and Rayleigh Road green belt boundaries from speculative housing targets."
+          },
+          {
+            type: "Tactical",
+            isTactical: true,
+            text: "Roger Weaver (Reform UK) surged to 35.5% (1,257 votes) in May 2026 as the Conservatives collapsed to 9.0%. In May 2027, Lib Dem Group Leader & Finance Portfolio Holder Cllr Paul Collins is on the ballot—tie him directly to the Labour administration's tax rises."
+          }
+        ],
+        nextSeat2027: {
+          name: "Cllr Paul Collins",
+          party: "LD",
+          profile: "Leader of the Liberal Democrat Group and Cabinet Member for Finance, Assets & Investments in the Labour-led coalition. Won 59.3% in 2023, but the Lib Dem share dropped to 48.5% against a 45.0% combined Reform + Con vote in May 2026."
+        },
+        otherCouncillors: [
+          { name: "Cllr Robert McMullan", party: "LD", role: "Elected May 2026 (1,717 votes / 48.5%) • Term ends 2030" },
+          { name: "Cllr Dave Poulton", party: "LD", role: "Liberal Democrat Whip • Term ends 2028" }
+        ],
+        coords: [
+          [51.582, 0.635], [51.582, 0.662], [51.565, 0.662],
+          [51.564, 0.638]
+        ]
+      },
+      {
+        id: "westborough",
+        name: "Westborough",
+        winner2026: "Lab",
+        totalVotes2026: 3015,
+        turnout2026: "37.8%",
+        majority2026: "222 votes (7.4%)",
+        shares2026: { Ref: 25.5, Con: 7.9, Lab: 32.9, Ind: 6.2, LD: 4.7, Grn: 21.4, Oth: 1.4 },
+        receptivity: 0.95,
+        demographics: {
+          age65: "13.1%",
+          ownerOcc: "51.2%",
+          nonGrad: "66.8%",
+          carsPerHH: "1.02"
+        },
+        priorities: [
+          {
+            type: "Policy 1",
+            isTactical: false,
+            text: "Enforce strict parking and waste rules on dense terraced streets and crack down on unlicensed HMO conversions between London Road and Fairfax Drive."
+          },
+          {
+            type: "Policy 2",
+            isTactical: false,
+            text: "Tackle alley-way fly-tipping and anti-social behaviour along the London Road retail corridor."
+          },
+          {
+            type: "Tactical",
+            isTactical: true,
+            text: "Labour's vote fell 20.9 points in May 2026 (to 32.9%) as the Greens rose to 21.4% and Reform took 25.5%. Consolidating the 7.9% Con + 6.2% Independent vote makes Labour Whip Cllr Anne Jones vulnerable in May 2027."
+          }
+        ],
+        nextSeat2027: {
+          name: "Cllr Anne Jones",
+          party: "Lab",
+          profile: "Long-serving Labour councillor and Cabinet Member. Won 49.6% in May 2023, but faces a fragmented left vote where Green (21.4%) is eating heavily into Labour's core."
+        },
+        otherCouncillors: [
+          { name: "Cllr Kevin Robinson", party: "Lab", role: "Elected May 2026 (991 votes / 32.9%) • Term ends 2030" },
+          { name: "Cllr Pamela Kinsella", party: "Lab", role: "Labour Group • Term ends 2028" }
+        ],
+        coords: [
+          [51.551, 0.684], [51.552, 0.698], [51.542, 0.698],
+          [51.542, 0.684]
+        ]
+      },
+      {
+        id: "chalkwell",
+        name: "Chalkwell",
+        winner2026: "Grn",
+        totalVotes2026: 3246,
+        turnout2026: "47.7%",
+        majority2026: "57 votes (1.8%)",
+        shares2026: { Ref: 23.9, Con: 29.8, Lab: 8.7, Ind: 0.0, LD: 4.1, Grn: 31.5, Oth: 1.9 },
+        receptivity: 0.92,
+        demographics: {
+          age65: "21.0%",
+          ownerOcc: "61.5%",
+          nonGrad: "60.4%",
+          carsPerHH: "1.19"
+        },
+        priorities: [
+          {
+            type: "Policy 1",
+            isTactical: false,
+            text: "Protect Chalkwell Esplanade & Chalkwell Park from commercial over-development and oppose seafront parking fee hikes."
+          },
+          {
+            type: "Policy 2",
+            isTactical: false,
+            text: "Demand tougher enforcement on seafront car cruising, late-night noise, and seasonal littering."
+          },
+          {
+            type: "Tactical",
+            isTactical: true,
+            text: "Textbook May 2026 spoiler warning: Green candidate Kay Mitchell won Chalkwell on 31.5% (by 57 votes) ONLY because the 55.6% right-of-centre majority split between Con (29.8%), Reform (23.9%), and Confelicity (1.9%). Uniting the right easily holds/wins Chalkwell in May 2027."
+          }
+        ],
+        nextSeat2027: {
+          name: "Cllr Stephen Habermel",
+          party: "Con",
+          profile: "Conservative councillor elected in May 2023 (42.8%). Defending a seat where a divided Conservative/populist-right vote in May 2026 handed victory to the Green Party by 57 votes."
+        },
+        otherCouncillors: [
+          { name: "Cllr Kay Mitchell", party: "Grn", role: "Elected May 2026 (1,024 votes / 31.5%) • Green Gain" },
+          { name: "Cllr James Courtenay", party: "Con", role: "Conservative Group Leader • Term ends 2028" }
+        ],
+        coords: [
+          [51.549, 0.668], [51.549, 0.690], [51.534, 0.690],
+          [51.535, 0.668]
+        ]
+      },
+      {
+        id: "west_leigh",
+        name: "West Leigh",
+        winner2026: "Con",
+        totalVotes2026: 4030,
+        turnout2026: "56.7%",
+        majority2026: "476 votes (11.8%)",
+        shares2026: { Ref: 21.5, Con: 37.5, Lab: 4.4, Ind: 0.0, LD: 8.3, Grn: 25.7, Oth: 2.6 },
+        receptivity: 0.90,
+        demographics: {
+          age65: "24.1%",
+          ownerOcc: "83.4%",
+          nonGrad: "58.2%",
+          carsPerHH: "1.50"
+        },
+        priorities: [
+          {
+            type: "Policy 1",
+            isTactical: false,
+            text: "Defend West Leigh's conservation areas, tree-lined avenues, and 83.4% owner-occupied housing stock from over-development."
+          },
+          {
+            type: "Policy 2",
+            isTactical: false,
+            text: "Campaign for lower council tax bands and commuter parking protection around Leigh railway station."
+          },
+          {
+            type: "Tactical",
+            isTactical: true,
+            text: "Highest turnout ward in Southend (56.7%). In May 2026, the Green Party surged to 2nd place (25.7%) behind Con (37.5%) and ahead of Reform (21.5%). Avoid a 30%/30% Con/Right split in May 2027 that would allow the Greens to win on ~28%."
+          }
+        ],
+        nextSeat2027: {
+          name: "Cllr Owen Cartey",
+          party: "Con",
+          profile: "Conservative councillor first elected in May 2023 (45.2%). Defending a traditional affluent Conservative ward where both Reform UK (21.5%) and the Greens (25.7%) made major inroads in May 2026."
+        },
+        otherCouncillors: [
+          { name: "Cllr Dr Alexander Shaw", party: "Con", role: "Elected May 2026 (1,510 votes / 37.5%) • Term ends 2030" },
+          { name: "Cllr Lesley Salter", party: "Con", role: "Deputy Conservative Leader • Term ends 2028" }
+        ],
+        coords: [
+          [51.549, 0.625], [51.549, 0.648], [51.537, 0.648],
+          [51.538, 0.625]
+        ]
+      },
+      {
+        id: "leigh",
+        name: "Leigh",
+        winner2026: "Grn",
+        totalVotes2026: 3633,
+        turnout2026: "49.1%",
+        majority2026: "529 votes (14.6%)",
+        shares2026: { Ref: 21.1, Con: 8.9, Lab: 4.5, Ind: 7.9, LD: 21.2, Grn: 35.8, Oth: 0.5 },
+        receptivity: 0.72,
+        demographics: {
+          age65: "19.8%",
+          ownerOcc: "71.4%",
+          nonGrad: "51.2%",
+          carsPerHH: "1.24"
+        },
+        priorities: [
+          {
+            type: "Policy 1",
+            isTactical: false,
+            text: "Support Old Leigh cockle-shed heritage, working fishermen, and Broadway independent traders against punitive council rates and parking fees."
+          },
+          {
+            type: "Policy 2",
+            isTactical: false,
+            text: "Demand action on Thames Water sewage discharges off Leigh Bell Wharf beach."
+          },
+          {
+            type: "Tactical",
+            isTactical: true,
+            text: "Paul Thurgood (Reform UK) finished just 5 votes behind the Lib Dems for 2nd place in May 2026 (21.1% vs 21.2%), while Green won 35.8%. If the 8.9% Con and 7.9% Ind votes consolidate behind a single challenger, Green incumbent Cllr Richard Longstaff can be pushed to a tight margin in May 2027."
+          }
+        ],
+        nextSeat2027: {
+          name: "Cllr Richard Longstaff",
+          party: "Grn",
+          profile: "Green Party spokesperson who gained Leigh from the Liberal Democrats in May 2023. Benefits from a graduate-heavy commuter demographic, though the Green share fell from 57.8% (2024) to 35.8% (2026) once Reform UK stood."
+        },
+        otherCouncillors: [
+          { name: "Cllr Anita Forde", party: "Grn", role: "Elected May 2026 (1,301 votes / 35.8%) • Term ends 2030" },
+          { name: "Cllr Stuart Allen", party: "Grn", role: "Green Party Group • Term ends 2028" }
+        ],
+        coords: [
+          [51.549, 0.648], [51.549, 0.668], [51.535, 0.668],
+          [51.537, 0.648]
+        ]
+      }
+    ];
+
+    // =========================================================================
+    // 2. STATE & ESRI DARK GRAY CANVAS MAP INITIALISATION
+    // =========================================================================
+    let isPactMode = false;
+    let currentIntensity = 1.25;
+    let currentMapViewMode = "strategy";
+    let selectedWardId = "southchurch";
+    let simulatedResults = {};
+    let polygonLayers = {};
+    let labelMarkers = {};
+
+    const map = L.map("map", {
+      center: [51.550, 0.712],
+      zoom: 12.4,
+      zoomSnap: 0.25
+    });
+
+    // 1. Esri Native Dark Base Map (Works on local file:// and https:// without 403 or watermarks)
+    L.tileLayer(
+      "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+      {
+        maxZoom: 16,
+        attribution: "Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ"
+      }
+    ).addTo(map);
+
+    // 2. Esri Street & Place Name Reference Overlay
+    L.tileLayer(
+      "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}",
+      {
+        maxZoom: 16,
+        pane: "overlayPane"
+      }
+    ).addTo(map);
+
+    // =========================================================================
+    // 3. MAY 2026 -> MAY 2027 ELECTORAL PROJECTION ENGINE
+    // =========================================================================
+    function computeWardProjection(ward, B, intensity, protestRate, rawWeights, pactActive) {
+      const weightSum = rawWeights.Ref + rawWeights.Con + rawWeights.Ind + rawWeights.Lab + rawWeights.Turn || 1;
+      const alpha = {
+        Ref: rawWeights.Ref / weightSum,
+        Con: rawWeights.Con / weightSum,
+        Ind: rawWeights.Ind / weightSum,
+        Lab: rawWeights.Lab / weightSum,
+        Turn: rawWeights.Turn / weightSum
+      };
+
+      // Check if Reform UK Pact Mode applies to this ward (Reform won 8 wards in May 2026)
+      const isReformHeld2026 = ward.winner2026 === "Ref";
+
+      if (pactActive && isReformHeld2026) {
+        // Stand-Aside for Reform UK ally in the 8 wards Reform won in May 2026
+        const rivalEntries = Object.entries(ward.shares2026).filter(([k]) => k !== "Ref");
+        rivalEntries.sort((a, b) => b[1] - a[1]);
+        const topRivalParty = rivalEntries[0][0];
+        const topRivalShare = rivalEntries[0][1];
+        const margin = +(ward.shares2026.Ref - topRivalShare).toFixed(1);
+
+        return {
+          finalShares: {
+            RB: 0.0,
+            Ref: ward.shares2026.Ref,
+            Con: ward.shares2026.Con,
+            Lab: ward.shares2026.Lab,
+            Ind: ward.shares2026.Ind,
+            LD: ward.shares2026.LD,
+            Grn: ward.shares2026.Grn,
+            Oth: ward.shares2026.Oth
+          },
+          topRivalParty,
+          topRivalShare,
+          margin,
+          winProb: 0.0,
+          projectedWinner: "Ref",
+          category: "pact",
+          badgeText: "Pact: Stand Aside (Ref)",
+          color: "#14b8a6"
+        };
+      }
+
+      // Calculate Restore Britain vote share
+      let rawRB = Math.min(64, B * ward.receptivity * intensity);
+      const availableProtest = ward.shares2026.Oth;
+      const absorbedProtest = Math.min(rawRB, availableProtest * (protestRate / 100));
+
+      let adjRef, adjCon, adjInd, adjLab;
+
+      if (pactActive && !isReformHeld2026) {
+        // In Pact Mode across the 9 non-Reform wards, Reform stands aside for Restore Britain:
+        // Restore Britain consolidates 85% of the May 2026 Reform UK vote + protest pool + Con/Ind transfers
+        const pactFromRef = ward.shares2026.Ref * 0.85;
+        const extraDraw = Math.max(0, rawRB * 0.65);
+        const nonRefWeightSum = rawWeights.Con + rawWeights.Ind + rawWeights.Lab + rawWeights.Turn || 1;
+
+        rawRB = Math.min(65, pactFromRef + absorbedProtest + extraDraw);
+        adjRef = +(ward.shares2026.Ref * 0.15).toFixed(1); // small residual stay-home/leakage
+        adjCon = Math.max(0, ward.shares2026.Con - (rawWeights.Con / nonRefWeightSum) * extraDraw);
+        adjInd = Math.max(0, ward.shares2026.Ind - (rawWeights.Ind / nonRefWeightSum) * extraDraw);
+        adjLab = Math.max(0, ward.shares2026.Lab - (rawWeights.Lab / nonRefWeightSum) * extraDraw);
+      } else {
+        // Head-to-Head Mode across all 17 wards
+        const remToDraw = Math.max(0, rawRB - absorbedProtest);
+        adjRef = Math.max(0, ward.shares2026.Ref - alpha.Ref * remToDraw);
+        adjCon = Math.max(0, ward.shares2026.Con - alpha.Con * remToDraw);
+        adjInd = Math.max(0, ward.shares2026.Ind - alpha.Ind * remToDraw);
+        adjLab = Math.max(0, ward.shares2026.Lab - alpha.Lab * remToDraw);
+      }
+
+      const adjLD = ward.shares2026.LD;
+      const adjGrn = ward.shares2026.Grn;
+      const adjOth = Math.max(0, availableProtest - absorbedProtest);
+
+      const rawTotal = rawRB + adjRef + adjCon + adjInd + adjLab + adjLD + adjGrn + adjOth || 100;
+      const norm = 100 / rawTotal;
+
+      const finalShares = {
+        RB: +(rawRB * norm).toFixed(1),
+        Ref: +(adjRef * norm).toFixed(1),
+        Con: +(adjCon * norm).toFixed(1),
+        Lab: +(adjLab * norm).toFixed(1),
+        Ind: +(adjInd * norm).toFixed(1),
+        LD: +(adjLD * norm).toFixed(1),
+        Grn: +(adjGrn * norm).toFixed(1),
+        Oth: +(adjOth * norm).toFixed(1)
+      };
+
+      const rivalEntries = Object.entries(finalShares).filter(([k]) => k !== "RB");
+      rivalEntries.sort((a, b) => b[1] - a[1]);
+      const topRivalParty = rivalEntries[0][0];
+      const topRivalShare = rivalEntries[0][1];
+
+      const margin = +(finalShares.RB - topRivalShare).toFixed(1);
+      const winProb = +(100 / (1 + Math.exp(-0.35 * margin))).toFixed(1);
+      const projectedWinner = finalShares.RB >= topRivalShare ? "RB" : topRivalParty;
+
+      const wasRightHeld2026 = ward.winner2026 === "Ref" || ward.winner2026 === "Con" || ward.winner2026 === "Ind";
+      const flipsToLeft =
+        wasRightHeld2026 && (projectedWinner === "Lab" || projectedWinner === "LD" || projectedWinner === "Grn");
+
+      let category = "hold";
+      let badgeText = "Low Priority";
+      let color = "#64748b";
+
+      if (winProb >= 50) {
+        category = "gain";
+        badgeText = "Projected Gain";
+        color = "#10b981";
+      } else if (winProb >= 20) {
+        category = "viable";
+        badgeText = flipsToLeft ? "Marginal / Split Risk" : "Viable Contender";
+        color = "#f59e0b";
+      } else if (flipsToLeft) {
+        category = "spoiler";
+        badgeText = `Spoiler (Flips to ${projectedWinner})`;
+        color = "#ef4444";
+      }
+
+      return {
+        finalShares,
+        topRivalParty,
+        topRivalShare,
+        margin,
+        winProb,
+        projectedWinner,
+        category,
+        badgeText,
+        color
+      };
+    }
+
+    // =========================================================================
+    // 4. SIMULATION CONTROLLER
+    // =========================================================================
+    function runSimulation() {
+      const B = parseFloat(document.getElementById("slider-baseline").value);
+      const protestRate = parseFloat(document.getElementById("slider-protest").value);
+
+      const rawWeights = {
+        Ref: parseFloat(document.getElementById("slider-w-ref").value),
+        Con: parseFloat(document.getElementById("slider-w-con").value),
+        Ind: parseFloat(document.getElementById("slider-w-ind").value),
+        Lab: parseFloat(document.getElementById("slider-w-lab").value),
+        Turn: parseFloat(document.getElementById("slider-w-turn").value)
+      };
+
+      const wSum = rawWeights.Ref + rawWeights.Con + rawWeights.Ind + rawWeights.Lab + rawWeights.Turn || 1;
+
+      document.getElementById("val-baseline").textContent = `${B.toFixed(1)}%`;
+      document.getElementById("val-intensity").textContent = `${currentIntensity.toFixed(2)}x`;
+      document.getElementById("val-protest").textContent = `${protestRate}%`;
+      document.getElementById("val-w-ref").textContent = `${Math.round((rawWeights.Ref / wSum) * 100)}%`;
+      document.getElementById("val-w-con").textContent = `${Math.round((rawWeights.Con / wSum) * 100)}%`;
+      document.getElementById("val-w-ind").textContent = `${Math.round((rawWeights.Ind / wSum) * 100)}%`;
+      document.getElementById("val-w-lab").textContent = `${Math.round((rawWeights.Lab / wSum) * 100)}%`;
+      document.getElementById("val-w-turn").textContent = `${Math.round((rawWeights.Turn / wSum) * 100)}%`;
+
+      let counts = { gain: 0, viable: 0, pact: 0, spoiler: 0, hold: 0 };
+
+      SOUTHEND_WARDS.forEach((ward) => {
+        const sim = computeWardProjection(ward, B, currentIntensity, protestRate, rawWeights, isPactMode);
+        simulatedResults[ward.id] = sim;
+        counts[sim.category]++;
+      });
+
+      document.getElementById("kpi-gains").textContent = counts.gain;
+      document.getElementById("kpi-viable").textContent = counts.viable;
+      document.getElementById("kpi-pact").textContent = counts.pact;
+      document.getElementById("kpi-spoiler").textContent = counts.spoiler;
+
+      renderMapPolygons();
+      renderWardRankingList();
+      renderSelectedWardDossier();
+    }
+
+    // =========================================================================
+    // 5. MAP RENDERING
+    // =========================================================================
+    function getPartyColor(party) {
+      const colors = {
+        RB: "#06b6d4",
+        Ref: "#12b6cf",
+        Con: "#0087dc",
+        Lab: "#e4003b",
+        LD: "#faa61a",
+        Grn: "#02a95b",
+        Ind: "#a855f7",
+        Oth: "#94a3b8"
+      };
+      return colors[party] || "#64748b";
+    }
+
+    function getWardFillColor(ward, sim) {
+      if (currentMapViewMode === "strategy") {
+        return sim.color;
+      } else if (currentMapViewMode === "2026") {
+        return getPartyColor(ward.winner2026);
+      } else {
+        if (ward.receptivity >= 1.30) return "#06b6d4";
+        if (ward.receptivity >= 1.15) return "#3b82f6";
+        if (ward.receptivity >= 0.95) return "#6366f1";
+        return "#475569";
+      }
+    }
+
+    function renderMapPolygons() {
+      SOUTHEND_WARDS.forEach((ward) => {
+        const sim = simulatedResults[ward.id];
+        const fillColor = getWardFillColor(ward, sim);
+        const isSelected = ward.id === selectedWardId;
+
+        if (!polygonLayers[ward.id]) {
+          const poly = L.polygon(ward.coords, {
+            color: isSelected ? "#ffffff" : "#0f172a",
+            weight: isSelected ? 3 : 1.5,
+            fillColor: fillColor,
+            fillOpacity: isSelected ? 0.76 : 0.55
+          }).addTo(map);
+
+          poly.on("click", () => {
+            selectedWardId = ward.id;
+            runSimulation();
+          });
+
+          polygonLayers[ward.id] = poly;
+
+          const center = poly.getBounds().getCenter();
+          const label = L.marker(center, {
+            icon: L.divIcon({
+              className: "",
+              html: `<div class="ward-map-label" id="lbl-${ward.id}"></div>`,
+              iconSize: [98, 28],
+              iconAnchor: [49, 14]
+            }),
+            interactive: false
+          }).addTo(map);
+
+          labelMarkers[ward.id] = label;
+        } else {
+          polygonLayers[ward.id].setStyle({
+            color: isSelected ? "#ffffff" : "#0f172a",
+            weight: isSelected ? 3 : 1.5,
+            fillColor: fillColor,
+            fillOpacity: isSelected ? 0.76 : 0.55
+          });
+        }
+
+        const lblEl = document.getElementById(`lbl-${ward.id}`);
+        if (lblEl) {
+          let subText = `Win: ${sim.winProb}%`;
+          if (currentMapViewMode === "2026") {
+            subText = `2026: ${ward.winner2026} (${ward.shares2026[ward.winner2026]}%)`;
+          } else if (currentMapViewMode === "receptivity") {
+            subText = `R_w: ${ward.receptivity.toFixed(2)}x`;
+          } else if (sim.category === "pact") {
+            subText = `Pact (Ref 2026)`;
+          }
+          lblEl.innerHTML = `${ward.name}<br/><span style="color:#38bdf8">${subText}</span>`;
+        }
+      });
+
+      renderLegend();
+    }
+
+    function renderLegend() {
+      const container = document.getElementById("legend-items");
+      if (currentMapViewMode === "strategy") {
+        container.innerHTML = `
+          <div class="legend-item"><span class="legend-swatch" style="background:#10b981"></span>Projected Gain (&ge;50% Win Prob)</div>
+          <div class="legend-item"><span class="legend-swatch" style="background:#f59e0b"></span>Viable Contender / Marginal (20–49%)</div>
+          <div class="legend-item"><span class="legend-swatch" style="background:#14b8a6"></span>Pact Stand-Aside (8 Reform 2026 Wards)</div>
+          <div class="legend-item"><span class="legend-swatch" style="background:#ef4444"></span>Spoiler Risk (Splits Right Vote)</div>
+          <div class="legend-item"><span class="legend-swatch" style="background:#64748b"></span>Low Priority / Safe Incumbent Hold</div>
+        `;
+      } else if (currentMapViewMode === "2026") {
+        container.innerHTML = `
+          <div class="legend-item"><span class="legend-swatch" style="background:#12b6cf"></span>Reform UK Gain (8 Wards)</div>
+          <div class="legend-item"><span class="legend-swatch" style="background:#e4003b"></span>Labour Hold (4 Wards)</div>
+          <div class="legend-item"><span class="legend-swatch" style="background:#0087dc"></span>Conservative Hold/Gain (2 Wards)</div>
+          <div class="legend-item"><span class="legend-swatch" style="background:#02a95b"></span>Green Party Gain/Hold (2 Wards)</div>
+          <div class="legend-item"><span class="legend-swatch" style="background:#faa61a"></span>Liberal Democrat Hold (Eastwood Park)</div>
+        `;
+      } else {
+        container.innerHTML = `
+          <div class="legend-item"><span class="legend-swatch" style="background:#06b6d4"></span>High Receptivity (R<sub>w</sub> &ge; 1.30x)</div>
+          <div class="legend-item"><span class="legend-swatch" style="background:#3b82f6"></span>Strong Alignment (1.15x – 1.29x)</div>
+          <div class="legend-item"><span class="legend-swatch" style="background:#6366f1"></span>Moderate (0.95x – 1.14x)</div>
+          <div class="legend-item"><span class="legend-swatch" style="background:#475569"></span>Low Alignment (&lt; 0.95x)</div>
+        `;
+      }
+    }
+
+    // =========================================================================
+    // 6. LEFT RANKING & RIGHT WARD DOSSIER
+    // =========================================================================
+    function renderWardRankingList() {
+      const listEl = document.getElementById("ward-ranking-list");
+      const sorted = [...SOUTHEND_WARDS].sort(
+        (a, b) => simulatedResults[b.id].winProb - simulatedResults[a.id].winProb
+      );
+
+      listEl.innerHTML = sorted
+        .map((ward) => {
+          const sim = simulatedResults[ward.id];
+          const selClass = ward.id === selectedWardId ? "selected" : "";
+          return `
+            <div class="ward-row ${selClass}" onclick="selectWardFromList('${ward.id}')">
+              <div>
+                <div style="font-weight:700;">${ward.name}</div>
+                <div style="font-size:0.66rem; color:var(--text-muted);">
+                  2026: ${ward.winner2026} • 2027 Up: ${ward.nextSeat2027.party}
+                </div>
+              </div>
+              <div style="text-align:right; font-variant-numeric:tabular-nums;">
+                <div style="font-weight:700; color:var(--accent-rb);">${sim.winProb}%</div>
+                <div style="font-size:0.66rem; color:var(--text-muted);">${sim.finalShares.RB}% vote</div>
+              </div>
+              <span class="badge badge-${sim.category}">${sim.badgeText}</span>
+            </div>
+          `;
+        })
+        .join("");
+    }
+
+    function selectWardFromList(wardId) {
+      selectedWardId = wardId;
+      const poly = polygonLayers[wardId];
+      if (poly) map.panTo(poly.getBounds().getCenter());
+      runSimulation();
+    }
+
+    function renderSelectedWardDossier() {
+      const ward = SOUTHEND_WARDS.find((w) => w.id === selectedWardId) || SOUTHEND_WARDS[0];
+      const sim = simulatedResults[ward.id];
+
+      document.getElementById("detail-ward-name").textContent = `${ward.name} Ward`;
+      document.getElementById("detail-2026-summary").textContent =
+        `7 May 2026: ${ward.winner2026} Winner • Maj: ${ward.majority2026} • Turnout: ${ward.turnout2026} (${ward.totalVotes2026.toLocaleString()} votes)`;
+
+      const badgeEl = document.getElementById("detail-outcome-badge");
+      badgeEl.className = `badge badge-${sim.category}`;
+      badgeEl.textContent = sim.badgeText;
+
+      document.getElementById("detail-win-prob").textContent = `${sim.winProb}%`;
+      document.getElementById("detail-rb-share").textContent = `${sim.finalShares.RB}%`;
+      document.getElementById("detail-margin").textContent = `${sim.margin >= 0 ? "+" : ""}${sim.margin}%`;
+      document.getElementById("detail-receptivity").textContent = `${ward.receptivity.toFixed(2)}x`;
+
+      // Render 3 Recommended Priorities (2 Policy + 1 Tactical)
+      document.getElementById("priority-list-container").innerHTML = ward.priorities
+        .map((p) => `
+          <div class="priority-item ${p.isTactical ? "tactical" : ""}">
+            <span class="priority-tag">${p.type}</span>
+            <span>${p.text}</span>
+          </div>
+        `)
+        .join("");
+
+      // Render Highlighted May 2027 Target Seat + Incumbent Profile
+      const next = ward.nextSeat2027;
+      document.getElementById("next-seat-container").innerHTML = `
+        <div class="next-seat-spotlight">
+          <div class="spotlight-header">
+            <div>
+              <span class="spotlight-tag">Up Next: May 2027 Election</span>
+              <span style="font-weight:800; font-size:0.9rem; margin-left:6px;">${next.name}</span>
+            </div>
+            <span class="badge" style="background:${getPartyColor(next.party)}28; color:${getPartyColor(next.party)}; border:1px solid ${getPartyColor(next.party)}77;">
+              Defending: ${next.party}
+            </span>
+          </div>
+          <div class="spotlight-bio">${next.profile}</div>
+        </div>
+      `;
+
+      // Render Other 2 Ward Councillors (Terms ending 2028 & 2030)
+      document.getElementById("councillor-list-container").innerHTML = ward.otherCouncillors
+        .map((c) => `
+          <div class="councillor-item" style="border-left-color: ${getPartyColor(c.party)};">
+            <div>
+              <div style="font-weight:700;">${c.name}</div>
+              <div class="councillor-role">${c.role}</div>
+            </div>
+            <span class="badge" style="background:${getPartyColor(c.party)}22; color:${getPartyColor(c.party)}; border:1px solid ${getPartyColor(c.party)}66;">
+              ${c.party}
+            </span>
+          </div>
+        `)
+        .join("");
+
+      // Render Simulated Vote Shares vs Exact 7 May 2026 Shares
+      const partiesOrder = [
+        { key: "RB", label: "Restore Britain (Projected)", base2026: 0.0, color: "#06b6d4" },
+        { key: "Ref", label: "Reform UK", base2026: ward.shares2026.Ref, color: "#12b6cf" },
+        { key: "Con", label: "Conservative", base2026: ward.shares2026.Con, color: "#0087dc" },
+        { key: "Lab", label: "Labour", base2026: ward.shares2026.Lab, color: "#e4003b" },
+        { key: "Grn", label: "Green Party", base2026: ward.shares2026.Grn, color: "#02a95b" },
+        { key: "Ind", label: "Independent", base2026: ward.shares2026.Ind, color: "#a855f7" },
+        { key: "LD", label: "Liberal Democrat", base2026: ward.shares2026.LD, color: "#faa61a" },
+        { key: "Oth", label: "Confelicity / Heritage", base2026: ward.shares2026.Oth, color: "#94a3b8" }
+      ];
+
+      document.getElementById("vote-bars-container").innerHTML = partiesOrder
+        .map((p) => {
+          const simVal = sim.finalShares[p.key];
+          const diff = +(simVal - p.base2026).toFixed(1);
+          const diffStr = diff >= 0 ? `+${diff}%` : `${diff}%`;
+          return `
+            <div class="bar-row">
+              <div class="bar-label-line">
+                <span style="font-weight:600;">${p.label}</span>
+                <span>
+                  <strong>${simVal}%</strong>
+                  <span style="color:var(--text-muted); font-size:0.68rem;">
+                    (May 2026: ${p.base2026}% | ${diffStr})
+                  </span>
+                </span>
+              </div>
+              <div class="bar-track">
+                <div class="bar-fill" style="width:${Math.min(100, simVal * 1.5)}%; background:${p.color};"></div>
+              </div>
+            </div>
+          `;
+        })
+        .join("");
+
+      // Render Ward Profile Demographics
+      const d = ward.demographics;
+      document.getElementById("demo-grid-container").innerHTML = `
+        <div class="demo-item"><div class="d-label">Residents Aged 65+</div><div class="d-val">${d.age65}</div></div>
+        <div class="demo-item"><div class="d-label">Owner-Occupied Tenure</div><div class="d-val">${d.ownerOcc}</div></div>
+        <div class="demo-item"><div class="d-label">Vocational / Non-Degree</div><div class="d-val">${d.nonGrad}</div></div>
+        <div class="demo-item"><div class="d-label">Cars per Household</div><div class="d-val">${d.carsPerHH}</div></div>
+      `;
+    }
+
+    // =========================================================================
+    // 7. UI CONTROLS & MODALS
+    // =========================================================================
+    function setPactMode(enabled) {
+      isPactMode = enabled;
+      document.getElementById("pact-off").classList.toggle("active", !enabled);
+      document.getElementById("pact-on").classList.toggle("active", enabled);
+
+      const cap = document.getElementById("pact-caption");
+      if (enabled) {
+        cap.innerHTML =
+          "<strong>Reform UK Pact Active:</strong> Standing aside in the 8 wards Reform won in May 2026; consolidating 85% of Reform's vote behind Restore Britain in the remaining 9 target wards.";
+      } else {
+        cap.innerHTML =
+          "<strong>Head-to-Head Mode:</strong> Restore Britain stands candidates across all 17 wards, competing directly with Reform UK, Conservatives, and Labour.";
+      }
+      runSimulation();
+    }
+
+    function setIntensity(val) {
+      currentIntensity = val;
+      document.getElementById("int-075").classList.toggle("active", val === 0.75);
+      document.getElementById("int-100").classList.toggle("active", val === 1.00);
+      document.getElementById("int-125").classList.toggle("active", val === 1.25);
+      runSimulation();
+    }
+
+    function setMapViewMode(mode) {
+      currentMapViewMode = mode;
+      document.getElementById("view-strategy").classList.toggle("active", mode === "strategy");
+      document.getElementById("view-2026").classList.toggle("active", mode === "2026");
+      document.getElementById("view-receptivity").classList.toggle("active", mode === "receptivity");
+      renderMapPolygons();
+    }
+
+    function resetAllSliders() {
+      document.getElementById("slider-baseline").value = 22;
+      document.getElementById("slider-protest").value = 80;
+      document.getElementById("slider-w-ref").value = 45;
+      document.getElementById("slider-w-con").value = 30;
+      document.getElementById("slider-w-ind").value = 10;
+      document.getElementById("slider-w-lab").value = 10;
+      document.getElementById("slider-w-turn").value = 5;
+      setPactMode(false);
+      setIntensity(1.25);
+    }
+
+    function openModal(id) {
+      document.getElementById(id).classList.add("open");
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove("open");
+    }
+
+    function closeModalOnBackdrop(event, id) {
+      if (event.target.id === id) closeModal(id);
+    }
+
+    document.getElementById("authoritySelect").addEventListener("change", function (e) {
+      if (e.target.value === "custom") {
+        document.getElementById("geojson-file-input").click();
+        e.target.value = "southend";
+      }
+    });
+
+    function handleCustomGeoJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        try {
+          const geojson = JSON.parse(e.target.result);
+          const layer = L.geoJSON(geojson, {
+            style: { color: "#06b6d4", weight: 2, fillColor: "#06b6d4", fillOpacity: 0.25 },
+            onEachFeature: function (feature, lyr) {
+              const name = feature.properties.WD24NM || feature.properties.WD23NM || feature.properties.name || "Imported Ward";
+              lyr.bindPopup(`<strong>${name}</strong><br/>Imported ONS Ward Boundary`);
+            }
+          }).addTo(map);
+          map.fitBounds(layer.getBounds());
+        } catch (err) {
+          alert("Could not parse GeoJSON file. Please ensure it is a valid ONS GeoJSON boundary file.");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      runSimulation();
+    });
+  </script>
+</body>
+</html>
