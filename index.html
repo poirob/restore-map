@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StratMap — Restore Britain Electoral Strategy & Targeting Engine</title>
+
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- TOP HEADER & KPI BAR -->
+  <header>
+    <div class="brand">
+      <div class="brand-badge">StratMap</div>
+      <div class="brand-title">
+        <h1>Restore Britain — Ward Strategy & Forecasting Engine</h1>
+        <p>Southend-on-Sea City Council • Calibrated Econometric Model ($R_w$, $\alpha_p$, $P_{\text{win}}$)</p>
+      </div>
+    </div>
+
+    <div class="kpi-strip">
+      <div class="kpi-pill">
+        <span class="kpi-dot" style="background: var(--color-gain);"></span>
+        <span>Projected Gains:</span>
+        <span class="kpi-val" id="kpi-gains">0</span>
+      </div>
+      <div class="kpi-pill">
+        <span class="kpi-dot" style="background: var(--color-viable);"></span>
+        <span>Viable Marginals:</span>
+        <span class="kpi-val" id="kpi-viable">0</span>
+      </div>
+      <div class="kpi-pill">
+        <span class="kpi-dot" style="background: var(--color-spoiler);"></span>
+        <span>Spoiler Risks:</span>
+        <span class="kpi-val" id="kpi-spoiler">0</span>
+      </div>
+      <div class="kpi-pill">
+        <span class="kpi-dot" style="background: var(--color-hold);"></span>
+        <span>Low Priority:</span>
+        <span class="kpi-val" id="kpi-hold">0</span>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <select class="council-select" id="baselineSelect" onchange="runSimulation()" title="Select Election Baseline">
+        <option value="2026" selected>Baseline: May 2026 Actuals</option>
+        <option value="2024">Baseline: May 2024 Actuals</option>
+      </select>
+      <select class="council-select" id="authoritySelect" title="Select Local Authority">
+        <option value="southend">Southend-on-Sea (17 Wards)</option>
+        <option value="custom">+ Import ONS GeoJSON...</option>
+      </select>
+      <button class="btn" onclick="openModal('formulaModal')">Econometric Formulas</button>
+    </div>
+  </header>
+
+  <!-- MAIN 3-COLUMN COMMAND WORKSPACE -->
+  <div class="workspace">
+
+    <!-- LEFT PANEL: ECONOMETRIC PARAMETERS & RANKING -->
+    <aside class="panel panel-left">
+
+      <!-- 1. Campaign Scenario & Pact Toggle -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">1. Scenario & Coalition Strategy</span>
+          <button class="btn btn-xs" onclick="resetAllSliders()">Reset</button>
+        </div>
+
+        <div class="control-group">
+          <div class="control-label">
+            <span>City-Wide Baseline Poll ($B$)</span>
+            <span class="control-val" id="val-baseline">18.0%</span>
+          </div>
+          <input type="range" id="slider-baseline" min="4" max="35" step="0.5" value="18" oninput="runSimulation()" />
+          <div class="sub-caption">Macro polling input scaled by Ward Receptivity ($R_w$) & Intensity ($I_w$).</div>
+        </div>
+
+        <div class="control-group">
+          <div class="control-label">
+            <span>Ground Campaign Intensity ($I_w$)</span>
+            <span class="control-val" id="val-intensity">1.25x</span>
+          </div>
+          <div class="mode-buttons">
+            <button class="mode-btn" id="int-075" onclick="setIntensity(0.75)">Paper (0.75x)</button>
+            <button class="mode-btn" id="int-100" onclick="setIntensity(1.00)">Standard (1.0x)</button>
+            <button class="mode-btn active" id="int-125" onclick="setIntensity(1.25)">Target (1.25x)</button>
+          </div>
+        </div>
+
+        <div class="control-group" style="margin-top: 12px;">
+          <div class="control-label">
+            <span>Reform UK Strategic Posture</span>
+            <span class="control-val" id="val-pact-status">Contest All</span>
+          </div>
+          <div class="mode-buttons" style="grid-template-columns: 1fr 1fr;">
+            <button class="mode-btn active" id="pact-off" onclick="setPactMode(false)">Contest All 17</button>
+            <button class="mode-btn" id="pact-on" onclick="setPactMode(true)">Reform Pact Mode</button>
+          </div>
+          <div class="sub-caption" id="pact-caption">Head-to-head competition across all 17 wards.</div>
+        </div>
+      </div>
+
+      <!-- 2. Asymmetric Vote Transfer Matrix -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">2. Asymmetric Transfer Matrix ($\alpha_p$)</span>
+          <span class="tag-cyan">Auto-Normalised</span>
+        </div>
+
+        <div class="control-group">
+          <div class="control-label">
+            <span>Minor Protest Absorb (Confelicity/Her.)</span>
+            <span class="control-val" id="val-protest">80%</span>
+          </div>
+          <input type="range" id="slider-protest" min="0" max="100" step="5" value="80" oninput="runSimulation()" />
+        </div>
+
+        <hr class="divider" />
+
+        <div class="control-group">
+          <div class="control-label">
+            <span>From Reform UK ($\alpha_{\text{Ref}}$)</span>
+            <span class="control-val" id="val-w-ref">40%</span>
+          </div>
+          <input type="range" id="slider-w-ref" min="0" max="100" step="5" value="40" oninput="runSimulation()" />
+        </div>
+
+        <div class="control-group">
+          <div class="control-label">
+            <span>From Conservatives ($\alpha_{\text{Con}}$)</span>
+            <span class="control-val" id="val-w-con">30%</span>
+          </div>
+          <input type="range" id="slider-w-con" min="0" max="100" step="5" value="30" oninput="runSimulation()" />
+        </div>
+
+        <div class="control-group">
+          <div class="control-label">
+            <span>From Independents ($\alpha_{\text{Ind}}$)</span>
+            <span class="control-val" id="val-w-ind">12%</span>
+          </div>
+          <input type="range" id="slider-w-ind" min="0" max="100" step="2" value="12" oninput="runSimulation()" />
+        </div>
+
+        <div class="control-group">
+          <div class="control-label">
+            <span>From Labour ($\alpha_{\text{Lab}}$)</span>
+            <span class="control-val" id="val-w-lab">8%</span>
+          </div>
+          <input type="range" id="slider-w-lab" min="0" max="100" step="2" value="8" oninput="runSimulation()" />
+        </div>
+
+        <div class="control-group">
+          <div class="control-label">
+            <span>From Lib Dem / Green ($\alpha_{\text{Prog}}$)</span>
+            <span class="control-val" id="val-w-prog">2%</span>
+          </div>
+          <input type="range" id="slider-w-prog" min="0" max="100" step="2" value="2" oninput="runSimulation()" />
+        </div>
+
+        <div class="control-group">
+          <div class="control-label">
+            <span>From Non-Voters / Turnout ($\alpha_{\text{Turn}}$)</span>
+            <span class="control-val" id="val-w-turn">8%</span>
+          </div>
+          <input type="range" id="slider-w-turn" min="0" max="100" step="2" value="8" oninput="runSimulation()" />
+        </div>
+      </div>
+
+      <!-- 3. Ranked Ward List -->
+      <div class="card" style="flex: 1;">
+        <div class="card-header">
+          <span class="card-title">3. Target Priority Ranking</span>
+          <span class="muted-xs">Sorted by $P_{\text{win}}$</span>
+        </div>
+        <div class="ward-list" id="ward-ranking-list"></div>
+      </div>
+
+    </aside>
+
+    <!-- CENTRE: ESRI DARK-MODE LEAFLET MAP -->
+    <main class="map-wrapper">
+      <div class="map-overlay-controls">
+        <button class="mode-btn active" id="view-strategy" onclick="setMapViewMode('strategy')">
+          Strategic Outcome View
+        </button>
+        <button class="mode-btn" id="view-baseline" onclick="setMapViewMode('baseline')">
+          Baseline Winner View
+        </button>
+        <button class="mode-btn" id="view-receptivity" onclick="setMapViewMode('receptivity')">
+          Receptivity Index ($R_w$)
+        </button>
+      </div>
+
+      <div id="map"></div>
+
+      <div class="map-legend">
+        <div class="legend-title">Map Colour Key</div>
+        <div id="legend-items"></div>
+      </div>
+    </main>
+
+    <!-- RIGHT PANEL: WARD INTELLIGENCE DOSSIER -->
+    <aside class="panel panel-right">
+
+      <!-- Outcome & Metrics -->
+      <div class="card">
+        <div class="ward-header-title">
+          <div>
+            <h2 id="detail-ward-name">Southchurch Ward</h2>
+            <p class="muted-xs" id="detail-baseline-summary">Loading baseline...</p>
+          </div>
+          <span class="badge badge-gain" id="detail-outcome-badge">Projected Gain</span>
+        </div>
+
+        <div class="prob-meter-box">
+          <div class="metric-tile">
+            <div class="label">Win Probability ($P_{\text{win}}$)</div>
+            <div class="value" id="detail-win-prob" style="color: var(--accent-rb);">--%</div>
+          </div>
+          <div class="metric-tile">
+            <div class="label">Projected RB Share ($V_{\text{RB}}$)</div>
+            <div class="value" id="detail-rb-share">--%</div>
+          </div>
+          <div class="metric-tile">
+            <div class="label">Plurality Margin ($M_w$)</div>
+            <div class="value" id="detail-margin">--%</div>
+          </div>
+          <div class="metric-tile">
+            <div class="label">Receptivity Index ($R_w$)</div>
+            <div class="value" id="detail-receptivity">--x</div>
+          </div>
+        </div>
+
+        <div class="briefing-box" id="detail-briefing"></div>
+      </div>
+
+      <!-- May 2027 Target Seat & Incumbent Profile -->
+      <div class="card target-2027-card">
+        <div class="card-header">
+          <span class="card-title" style="color: #fbbf24;">★ May 2027 Seat Up Next — Incumbent Profile</span>
+          <span class="badge badge-2027" id="target-2027-party">Defending: Con</span>
+        </div>
+        <div id="target-2027-dossier"></div>
+      </div>
+
+      <!-- 3 Combined Strategic Priorities -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">3 Recommended Ward Priorities</span>
+          <span class="muted-xs">2 Policy + 1 Tactical</span>
+        </div>
+        <div class="priority-list" id="ward-priorities-container"></div>
+      </div>
+
+      <!-- Simulated Vote Share vs Actuals -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Projected Vote Share vs. Baseline</span>
+          <span class="muted-xs">FPTP Simulation</span>
+        </div>
+        <div id="vote-bars-container"></div>
+      </div>
+
+      <!-- Southend Ward Profile Demographics -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Southend Ward Profile Metrics</span>
+          <a href="https://www.southend.gov.uk/directory/61/ward-profiles" target="_blank" rel="noopener" class="link-cyan">Directory 61 ↗</a>
+        </div>
+        <div class="demo-grid" id="demo-grid-container"></div>
+      </div>
+
+      <!-- Full 3-Councillor Roster -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Full Ward Councillor Roster (3 Seats)</span>
+          <span class="muted-xs">2026/27 Council</span>
+        </div>
+        <div class="councillor-list" id="councillor-list-container"></div>
+      </div>
+
+    </aside>
+  </div>
+
+  <!-- MODAL: ECONOMETRIC FORMULAS -->
+  <div class="modal-backdrop" id="formulaModal" onclick="closeModalOnBackdrop(event, 'formulaModal')">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>StratMap Calibrated Econometric Methodology</h2>
+        <button class="btn" onclick="closeModal('formulaModal')">Close ✕</button>
+      </div>
+
+      <h3>1. Ward Demographic Receptivity Multiplier ($R_w$)</h3>
+      <p>Benchmarked against Southend-on-Sea averages from official ONS Census and Southend Ward Profiles (Directory 61):</p>
+      <div class="formula-box">
+        R_w = 0.25*(Age65+ / Avg65+) + 0.20*(OwnerOcc / AvgOwner) + 0.25*(NonGrad / AvgNonGrad) + 0.30*(RightPool / AvgRightPool)
+      </div>
+
+      <h3>2. Projected Restore Britain Vote Share ($V_{\text{RB}, w}$)</h3>
+      <p>Scales the city-wide macro polling baseline ($B$) by ward receptivity ($R_w$) and campaign intensity ($I_w$), capped at 65%:</p>
+      <div class="formula-box">
+        V_RB = min(65, B * R_w * I_w)
+      </div>
+
+      <h3>3. Asymmetric Vote-Transfer Matrix ($\alpha_p$)</h3>
+      <p>Absorbs available minor protest shares (Confelicity/Heritage) first, then draws remaining support asymmetrically from rival parties ($\sum \alpha_p = 1$):</p>
+      <div class="formula-box">
+        V'_{p,w} = max(0, V_{p,w} - alpha_p * max(0, V_RB - V_abs))
+      </div>
+
+      <h3>4. First-Past-The-Post Logistic Win Probability ($P_{\text{win}}$)</h3>
+      <p>Converts the plurality margin ($M_w$) over the strongest local challenger into win probability via a sigmoid curve ($k = 0.35$):</p>
+      <div class="formula-box">
+        M_w = V_RB - max(V'_rivals) &nbsp;&nbsp;|&nbsp;&nbsp; P_win = 100 / (1 + exp(-0.35 * M_w))
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden GeoJSON Uploader -->
+  <input type="file" id="geojson-file-input" accept=".json,.geojson" style="display: none;" onchange="handleCustomGeoJSON(event)" />
+
+  <!-- Scripts -->
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
